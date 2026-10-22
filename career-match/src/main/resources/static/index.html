@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerMatch</title>
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+
+<header>
+    <div class="brand">Career<span>Match</span></div>
+    <nav id="navLinks">
+        <a href="#" onclick="switchView('jobs')" class="nav-link active">Jobs</a>
+        <a href="#" onclick="switchView('resume')" id="navResume" class="nav-link">Resume</a>
+        <a href="#" onclick="switchView('applications')" id="navApps" class="nav-link">My Applications</a>
+        <a href="#" onclick="switchView('adminSection')" id="navAdmin" class="nav-link" style="display:none;">Admin Dashboard</a>
+        <a href="#" onclick="switchView('about')" class="nav-link">About</a>
+    </nav>
+    <div class="auth-buttons" id="authButtons">
+        <button class="btn secondary" onclick="showRegister()">Register</button>
+        <button class="btn" onclick="showLogin()">Login</button>
+    </div>
+</header>
+
+<main>
+    <!-- HERO -->
+    <section class="hero">
+        <div>
+            <p class="tag">AI-inspired basic NLP matching</p>
+            <h1>Find jobs that match your skills.</h1>
+            <p>Upload your resume and get a simple keyword-based match score for every job.</p>
+            <a class="btn" href="#jobs">Explore Jobs</a>
+        </div>
+        <div class="hero-card">
+            <b>Resume Match</b>
+            <div class="score">85%</div>
+            <small>Java · Spring Boot · MySQL</small>
+        </div>
+    </section>
+
+    <!-- RESUME UPLOAD (For Job Seekers) -->
+    <section id="resume" class="panel">
+        <h2>Upload Resume</h2>
+        <div class="row">
+            <input id="userId" type="number" value="3" placeholder="User ID" hidden>
+            <input id="resumeFile" type="file" accept=".pdf,.txt">
+            <button class="btn" onclick="uploadResume()">Upload & Extract</button>
+        </div>
+        <p id="resumeMsg"></p>
+    </section>
+
+    <!-- ADMIN DASHBOARD SECTION -->
+    <!-- ADMIN DASHBOARD SECTION -->
+    <section id="adminSection" class="panel" style="display: none;">
+        <h2>Admin Dashboard - Manage Jobs & Analytics</h2>
+
+        <!-- Analytics Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">
+            <div style="background: #eef2ff; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #c7d2fe;">
+                <h4 style="margin: 0; color: #4f46e5; font-size: 14px;">Total Jobs</h4>
+                <p id="statJobsCount" style="font-size: 28px; font-weight: 800; margin: 8px 0 0; color: #1e1b4b;">0</p>
+            </div>
+            <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #bbf7d0;">
+                <h4 style="margin: 0; color: #16a34a; font-size: 14px;">Total Candidates</h4>
+                <p id="statCandidatesCount" style="font-size: 28px; font-weight: 800; margin: 8px 0 0; color: #14532d;">0</p>
+            </div>
+            <div style="background: #fdf4ff; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #f5d0fe;">
+                <h4 style="margin: 0; color: #c084fc; font-size: 14px;">Total Applications</h4>
+                <p id="statAppsCount" style="font-size: 28px; font-weight: 800; margin: 8px 0 0; color: #581c87;">0</p>
+            </div>
+        </div>
+
+        <div class="form-grid" style="display:grid; gap:10px; margin-bottom:20px;">
+            <input type="text" id="newJobTitle" placeholder="Job Title" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="newJobCompany" placeholder="Company" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="newJobLocation" placeholder="Location" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+            <textarea id="newJobDesc" placeholder="Job Description" rows="3" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;"></textarea>
+            <input type="text" id="newJobSkills" placeholder="Skills (comma separated, e.g. Java, Spring Boot)" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+
+            <select id="newJobStatus" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="CLOSED">CLOSED</option>
+            </select>
+
+            <button class="btn" onclick="createJob()">Post New Job</button>
+        </div>
+        <p id="adminMsg" style="font-weight:bold;"></p>
+    </section>
+
+    <!-- RECOMMENDED JOBS -->
+    <!-- RECOMMENDED JOBS -->
+    <section id="jobs">
+        <div class="section-head">
+            <div>
+                <p class="tag">Open positions</p>
+                <h2>Recommended Jobs</h2>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <!-- Sorting Dropdown -->
+                <select id="jobSortSelect" onchange="sortJobs()" style="padding: 8px 12px; border: 1px solid #d8dee9; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer;">
+                    <option value="latest">Sort by: Latest</option>
+                    <option value="match">Sort by: Best Match %</option>
+                </select>
+                <button class="btn secondary" onclick="loadJobs()">Refresh</button>
+            </div>
+        </div>
+        <div class="search-box">
+            <input type="text" id="jobSearch" placeholder="Search jobs by title, company or location..." oninput="filterJobs()">
+        </div>
+        <div id="jobList" class="grid"></div>
+    </section>
+
+    <!-- MY APPLICATIONS -->
+    <section id="applications" class="panel">
+        <div class="section-head">
+            <div>
+                <p class="tag" id="appTagTitle">Your activity</p>
+                <h2 id="appHeaderTitle">My Applications</h2>
+            </div>
+            <button class="btn secondary" onclick="loadApplications()">Refresh</button>
+        </div>
+        <div id="applicationList">
+            <p class="muted">No applications loaded.</p>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="about">
+        <h2>How it works</h2>
+        <div class="steps">
+            <div><b>1</b><p>Upload resume</p></div>
+            <div><b>2</b><p>Extract resume text</p></div>
+            <div><b>3</b><p>Compare skills with job description</p></div>
+            <div><b>4</b><p>Get match score and apply</p></div>
+        </div>
+    </section>
+
+    <!-- JOB DETAILS MODAL -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <button id="closeModal" class="close-btn">×</button>
+            <h2 id="modalTitle"></h2>
+            <p id="modalCompany" class="company"></p>
+            <h3>Description</h3>
+            <p id="modalDescription"></p>
+            <h3>Required Skills</h3>
+            <div id="modalSkills" class="skills"></div>
+            <button id="modalApplyBtn" class="btn">Apply Job</button>
+        </div>
+    </div>
+
+    <!-- EDIT JOB MODAL -->
+    <div id="editJobModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <button id="closeEditModal" class="close-btn" onclick="closeEditModal()">×</button>
+            <h2>Edit Job</h2>
+            <p class="muted">Update job posting details</p>
+            <input type="hidden" id="editJobId">
+            <div style="display:grid; gap:10px; margin-top:15px;">
+                <input type="text" id="editJobTitle" placeholder="Job Title" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                <input type="text" id="editJobCompany" placeholder="Company" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                <input type="text" id="editJobLocation" placeholder="Location" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                <textarea id="editJobDesc" placeholder="Job Description" rows="4" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;"></textarea>
+                <input type="text" id="editJobSkills" placeholder="Skills (comma separated)" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                <button class="btn" onclick="saveJobEdit()">Update Job</button>
+            </div>
+            <p id="editMsg" style="margin-top:10px; font-weight:bold;"></p>
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeEditProfileModal()">×</button>
+            <h2>Edit Profile</h2>
+            <p class="muted">Update your professional details</p>
+
+            <input type="text" id="editProfileName" placeholder="Full Name" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="editProfilePhone" placeholder="Phone Number" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="editProfileCollege" placeholder="College / University" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="editProfileSkills" placeholder="Top Skills" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+            <input type="text" id="editProfileLinkedin" placeholder="LinkedIn URL" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+            <button class="btn" style="width:100%; margin-top:10px;" onclick="saveProfileChanges()">Save Changes</button>
+            <p id="editProfileMsg" style="margin-top:8px; font-weight:bold;"></p>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <button id="closeAuthModal" class="close-btn" onclick="closeAuthModal()">×</button>
+
+            <!-- LOGIN BOX -->
+            <div id="loginBox">
+                <h2>Login</h2>
+                <p class="muted">Login to your CareerMatch account</p>
+
+                <input id="loginEmail" type="email" placeholder="Email" style="width:100%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <div class="password-container" style="margin:8px 0;">
+                    <input id="loginPassword" type="password" placeholder="Password" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">👁️</button>
+                </div>
+
+                <button class="btn" style="width:100%; margin-top:10px;" onclick="loginUser()">Login</button>
+                <p id="loginMsg" style="margin-top:8px; font-weight:bold;"></p>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <button class="link-btn" onclick="showForgotPassword()">Forgot Password?</button>
+                    <button class="link-btn" onclick="showRegister()">Register</button>
+                </div>
+            </div>
+
+            <!-- FORGOT PASSWORD BOX -->
+            <div id="forgotBox" style="display: none;">
+                <h2>Reset Password</h2>
+                <p class="muted">Enter your registered email & new password</p>
+
+                <input id="forgotEmail" type="email" placeholder="Registered Email" style="width:100%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <div class="password-container" style="margin:8px 0;">
+                    <input id="forgotNewPassword" type="password" placeholder="New Password (e.g., Manoj@123)" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forgotNewPassword', this)">👁️</button>
+                </div>
+
+                <button class="btn" style="width:100%; margin-top:10px;" onclick="resetPassword()">Update Password</button>
+                <p id="forgotMsg" style="margin-top:8px; font-weight:bold;"></p>
+                <p style="margin-top:10px;"><button class="link-btn" onclick="showLogin()">Back to Login</button></p>
+            </div>
+
+            <!-- REGISTER BOX -->
+            <div id="registerBox" style="display: none;">
+                <h2>Create Account</h2>
+                <p class="muted">Build your professional profile</p>
+
+                <input id="registerName" type="text" placeholder="Full Name * (e.g., Manoj Kumar Singh)" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <input id="registerEmail" type="email" placeholder="Email Address * (e.g., manoj@gmail.com)" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <div class="password-container" style="margin:6px 0;">
+                    <input id="registerPassword" type="password" placeholder="Password *" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('registerPassword', this)">👁️</button>
+                </div>
+                <!-- Strong Password Hint -->
+                <small style="color: #64748b; display: block; margin-top: -2px; margin-bottom: 6px; font-size: 12px;">
+                    Hint: Use 6+ chars with letters, numbers & symbols (e.g., <b>Manoj@123</b>)
+                </small>
+
+                <input id="registerPhone" type="text" placeholder="Phone Number (e.g., 9876501234)" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <input id="registerCollege" type="text" placeholder="College / University (e.g., IIT Roorkee)" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <input id="registerSkills" type="text" placeholder="Top Skills (e.g., Java, Spring Boot, MySQL)" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <input id="registerLinkedin" type="text" placeholder="LinkedIn URL (e.g., linkedin.com/in/manoj)" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+
+                <select id="registerRole" style="width:100%; padding:12px; margin:6px 0; border:1px solid #ddd; border-radius:8px;">
+                    <option value="JOB_SEEKER">Job Seeker</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+
+                <button class="btn" style="width:100%; margin-top:10px;" onclick="registerUser()">Register</button>
+                <p id="registerMsg" style="margin-top:8px; font-weight:bold;"></p>
+                <p style="margin-top:10px;">Already have an account? <button class="link-btn" onclick="showLogin()">Login</button></p>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- TOAST CONTAINER -->
+<div id="toastContainer"></div>
+<script src="app.js?v=4"></script>
+</body>
+</html>
